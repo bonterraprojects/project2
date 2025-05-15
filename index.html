@@ -76,10 +76,10 @@
     <p><a href="#" id="googleFormLink" target="_blank">👉 당첨자 설문 바로가기</a></p>
   </div>
 
-  <script>
-async function checkCode() {
-  const code = document.getElementById("codeInput").value.trim().toUpperCase();
-  const url = `https://script.google.com/macros/s/AKfycbyZXR1HtK1yyN00hVn_hntyXQ6eCzZW8MQELXMMXsNIOdjI4Br9hRiPxpu29pkAlugsAA/exec?code=${encodeURIComponent(code)}`; // 수정된 URL
+<script>
+  async function checkCode() {
+    const code = document.getElementById("codeInput").value.trim().toUpperCase();
+    const url = `https://script.google.com/macros/s/AKfycbwXwEoARR4NjXoVtbzSoSn-l2co17cDqx8GRyGtn5mXrBOlsvs3cbK31YvjzrdGpXH7Qg/exec?code=${encodeURIComponent(code)}`;
 
     try {
       const response = await fetch(url);
@@ -90,8 +90,11 @@ async function checkCode() {
         document.getElementById("result").innerText = "🎉 진심으로 축하합니다! 당첨되셨습니다. 🎉";
         document.getElementById("googleFormLink").href = formURL;
         document.getElementById("formLink").style.display = "block";
+      } else if (status === "used") {
+        document.getElementById("result").innerText = "⚠️ 이미 사용된 코드입니다.";
+        document.getElementById("formLink").style.display = "none";
       } else {
-        document.getElementById("result").innerText = "❌ 당첨되지 않았습니다. 다음 기회에 도전해주세요. ❌";
+        document.getElementById("result").innerText = "❌ 당첨되지 않았습니다. 다음 기회에 도전해주세요.";
         document.getElementById("formLink").style.display = "none";
       }
     } catch (err) {
