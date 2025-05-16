@@ -48,10 +48,10 @@
         document.getElementById("googleFormLink").href = formURL;
         document.getElementById("formLink").style.display = "block";
       } else if (status === "used") {
-        document.getElementById("result").innerText = "⚠️ 이미 사용된 코드입니다.";
+        document.getElementById("result").innerText = "⚠️ 이미 사용된 코드입니다. ⚠️";
         document.getElementById("formLink").style.display = "none";
       } else {
-        document.getElementById("result").innerText = "❌ 당첨되지 않았습니다. 다음 기회에 도전해주세요.";
+        document.getElementById("result").innerText = "❌ 당첨되지 않았습니다. ❌";
         document.getElementById("formLink").style.display = "none";
       }
     } catch (err) {
