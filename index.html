@@ -6,57 +6,93 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 40px; background-color: #f9f9f9; }
     h2 { color: #333; }
-    input { padding: 12px; font-size: 16px; width: 200px; border: 1px solid #ccc; border-radius: 5px; }
-    button { padding: 12px 24px; font-size: 16px; margin-left: 10px; background-color: #0078D7; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    input { padding: 12px; font-size: 16px; width: 220px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+    button { padding: 12px 24px; font-size: 16px; background-color: #0078D7; color: white; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background-color: #005EA6; }
-    #result { margin-top: 30px; font-weight: bold; font-size: 18px; }
+    #result { margin-top: 30px; font-weight: bold; font-size: 18px; color: red; }
     #formLink { margin-top: 20px; }
     #formLink a { display: inline-block; padding: 10px 18px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; }
     #formLink a:hover { background-color: #218838; }
+    #phoneSection, #formLink { display: none; }
   </style>
 </head>
 <body>
 
   <h2>🎁 [본테라] 영케이 이벤트 당첨 확인 페이지 🎁</h2>
-  <p>제품에 동봉된 코드를 그대로 입력해주세요.</p>
+  <p>제품에 동봉된 코드를 입력해주세요.</p>
 
-  <input type="text" id="codeInput" placeholder="" />
-  <button onclick="checkCode()">확인</button>
+  <input type="text" id="codeInput" placeholder="이벤트 코드 입력" />
+  <br><button onclick="verifyCode()">확인</button>
+
+  <div id="phoneSection">
+    <p>전화번호를 숫자만 입력해주세요 (예: 01012345678)</p>
+    <input type="text" id="phoneInput" placeholder="전화번호 입력" />
+    <br><label><input type="checkbox" id="consentCheck"> 개인정보 활용에 동의합니다.</label>
+    <br><button onclick="submitPhone()">확인</button>
+  </div>
 
   <div id="result"></div>
 
-  <div id="formLink" style="display:none;">
+  <div id="formLink">
     <p><a href="#" id="googleFormLink" target="_blank">👉 당첨자 설문 바로가기</a></p>
   </div>
 
 <script>
-  async function checkCode() {
+  const fakeKey = "ekTB0261!!";
+  const workerURL = "https://dawn-unit-f65e.mrsh200.workers.dev/";
+
+  async function verifyCode() {
     const code = document.getElementById("codeInput").value.trim().toUpperCase();
-
-    // 
-    const fakeKey = "ekTB0261!!";
-
-    const url = `https://dawn-unit-f65e.mrsh200.workers.dev/?code=${encodeURIComponent(code)}&secret=${encodeURIComponent(fakeKey)}`;
+    if (!code) return alert("코드를 입력해주세요.");
 
     try {
-      const response = await fetch(url);
-      const resultText = await response.text();
-      const [status, formURL] = resultText.split("|");
+      const res = await fetch(`${workerURL}?code=${encodeURIComponent(code)}&secret=${encodeURIComponent(fakeKey)}`);
+      const result = await res.text();
 
-      if (status === "valid" && formURL) {
-        document.getElementById("result").innerText = "🎉 진심으로 축하합니다! 당첨되셨습니다. 🎉";
-        document.getElementById("googleFormLink").href = formURL;
-        document.getElementById("formLink").style.display = "block";
-      } else if (status === "used") {
+      if (result === "valid") {
+        document.getElementById("phoneSection").style.display = "block";
+        document.getElementById("result").innerText = "";
+      } else if (result === "used") {
         document.getElementById("result").innerText = "⚠️ 이미 사용된 코드입니다. ⚠️";
-        document.getElementById("formLink").style.display = "none";
       } else {
-        document.getElementById("result").innerText = "❌ 당첨되지 않았습니다. ❌";
-        document.getElementById("formLink").style.display = "none";
+        document.getElementById("result").innerText = "❌ 유효하지 않은 코드입니다. ❌";
       }
     } catch (err) {
-      document.getElementById("result").innerText = "오류가 발생했습니다. 다시 시도해 주세요.";
       console.error(err);
+      document.getElementById("result").innerText = "오류가 발생했습니다. 다시 시도해 주세요.";
+    }
+  }
+
+  async function submitPhone() {
+    const phone = document.getElementById("phoneInput").value.trim();
+    const code = document.getElementById("codeInput").value.trim().toUpperCase();
+    const consent = document.getElementById("consentCheck").checked;
+
+    if (!/^\d{10,11}$/.test(phone)) {
+      alert("전화번호는 숫자만 입력해주세요.");
+      return;
+    }
+
+    if (!consent) {
+      alert("개인정보 활용 동의가 필요합니다.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${workerURL}?code=${encodeURIComponent(code)}&phone=${encodeURIComponent(phone)}&secret=${encodeURIComponent(fakeKey)}`);
+      const result = await res.text();
+
+      if (result.startsWith("success|")) {
+        const [, formURL] = result.split("|");
+        document.getElementById("googleFormLink").href = formURL;
+        document.getElementById("formLink").style.display = "block";
+        document.getElementById("result").innerText = "🎉 진심으로 축하합니다! 아래 링크로 설문을 완료해주세요!";
+      } else {
+        document.getElementById("result").innerText = "오류가 발생했습니다. 다시 시도해 주세요.";
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("result").innerText = "서버 오류입니다. 다시 시도해주세요.";
     }
   }
 </script>
